@@ -29,11 +29,28 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useAuth } from '@clerk/vue'
+
 const clickCount = ref(0)
 const message = ref('Loading data from API...')
+const { getToken } = useAuth()
+
 
 onMounted(async () => {
-    const res = await fetch('http://localhost:8000/api/hello')
+    const token = await getToken.value({template: 'neon'})
+
+    if (!token) {
+        console.error('JWT is null')
+        return
+    }
+
+    console.log(token)
+
+    const res = await fetch('http://localhost:8000/api/hello/', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
     const data = await res.json()
     console.log(data.message)
     message.value = data.message
