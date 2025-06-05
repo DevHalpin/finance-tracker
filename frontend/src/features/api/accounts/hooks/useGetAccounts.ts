@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/vue-query';
-import { useAuthFetch } from '../authFetch';
+import { useAuthFetch } from '../../authFetch';
 
 type Account = { id: number; name: string };
 
