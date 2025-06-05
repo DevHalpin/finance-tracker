@@ -9,6 +9,14 @@ def hello_world(request):
 
 @api_view(['GET'])
 def get_accounts(request):
-    accounts = Account.objects.all()
+    accounts = Account.objects.filter(user=request.user)
     serializer = AccountSerializer(accounts, many=True)
     return Response({ "accounts": serializer.data })
+
+@api_view(['POST'])
+def create_account(request):
+    serializer = AccountSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
