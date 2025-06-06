@@ -1,4 +1,3 @@
-// src/composables/useAccountDrawer.js
 import { ref } from 'vue'
 
 const drawerOpen = ref(false)
