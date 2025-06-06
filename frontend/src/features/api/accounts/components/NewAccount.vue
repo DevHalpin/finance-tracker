@@ -12,7 +12,7 @@
         Create a new account to track your transactions.
       </p>
     </v-container>
-    <AccountForm :disabled="isDisabled" @submit="handleSubmit" @delete="handleDelete" />
+    <AccountForm ref="formRef" :disabled="isDisabled" @submit="handleSubmit" @delete="handleDelete" />
   </v-navigation-drawer>
 
 </template>
@@ -22,10 +22,13 @@ import { ref, watch, defineProps, defineEmits, computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import AccountForm from './AccountForm.vue'
 import { useCreateAccount } from '../hooks/useCreateAccount'
+import type { ComponentPublicInstance } from 'vue'
 
 const mutation = useCreateAccount()
 
 const isDisabled = computed(() => mutation.isPending.value)
+
+const formRef = ref<ComponentPublicInstance<{ reset: () => void }> | null>(null)
 
 
 type AccountFormValues = {
@@ -55,6 +58,7 @@ const handleSubmit = (values: AccountFormValues) => {
   mutation.mutate(values, {
     onSuccess: () => {
       open.value = false
+      formRef.value?.reset()
     }
   })
 }

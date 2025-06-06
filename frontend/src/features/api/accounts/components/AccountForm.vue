@@ -17,51 +17,62 @@
 </template>
 
 <script lang="ts" setup>
-import { Trash } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ref, watch, defineExpose } from 'vue';
 import { VForm } from 'vuetify/components';
+import { Trash } from 'lucide-vue-next';
 
 export interface FormValues {
-    name: string;
+  name: string;
 }
 
-const isFormValid = ref(false);
-
 const props = defineProps<{
-    id?: string;
-    defaultValues?: FormValues;
-    onSubmit: (values: FormValues) => void;
-    onDelete?: () => void;
-    disabled?: boolean;
+  id?: string;
+  defaultValues?: FormValues;
+  onSubmit: (values: FormValues) => void;
+  onDelete?: () => void;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
-    (e: 'submit', values: FormValues): void;
-    (e: 'delete'): void;
+  (e: 'submit', values: FormValues): void;
+  (e: 'delete'): void;
 }>();
 
 const formRef = ref<VForm | null>(null);
-const form = ref<FormValues>({
-    name: props.defaultValues?.name || ''
-});
+const isFormValid = ref(false);
 
-watch(() => props.defaultValues, (newVal) => {
-    form.value = { name: newVal?.name || '' };
+const form = ref<FormValues>({
+  name: props.defaultValues?.name || '',
 });
 
 const nameRules = [
-    (v: string) => !!v || 'Name is required',
-    (v: string) => v.length >= 3 || 'Name must be at least 3 characters',
+  (v: string) => !!v || 'Name is required',
+  (v: string) => v.length >= 3 || 'Name must be at least 3 characters',
 ];
 
+watch(
+  () => props.defaultValues,
+  (newValues) => {
+    form.value = { name: newValues?.name || '' };
+  }
+);
+
 const submitForm = async () => {
-    const valid = await formRef.value?.validate();
-    if (valid) {
-        emit('submit', form.value);
-    }
+  const valid = await formRef.value?.validate();
+  if (valid) {
+    emit('submit', form.value);
+  }
 };
 
 const handleDelete = () => {
-    emit('delete');
+  emit('delete');
 };
+
+const reset = () => {
+  form.value = { name: '' };
+  isFormValid.value = false;
+  formRef.value?.resetValidation();
+};
+
+defineExpose({ reset });
 </script>
