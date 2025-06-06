@@ -1,60 +1,45 @@
 <template>
-  <v-navigation-drawer
-    v-model="open"
-    location="right"
-    temporary
-    :width=drawerWidth
-    class="elevation-3"
-    style="border-left: 1px solid #e0e0e0; background-color: white;"
-  >
+  <v-navigation-drawer :model-value="open" @update:model-value="open = $event" location="right" temporary
+    :width="drawerWidth" class="elevation-3" style="border-left: 1px solid #e0e0e0; background-color: white;">
     <v-container class="pt-6 text-center">
-      <v-btn
-        icon
-        variant="text"
-        style="position: absolute; top: 16px; right: 16px; z-index: 10;"
-        @click="open = false"
-      >
+      <v-btn icon variant="text" class="close-btn" @click="open = false" aria-label="Close drawer">
         <v-icon color="grey">mdi-close</v-icon>
       </v-btn>
+
 
       <h2 class="text-h6 font-weight-bold mb-1">New Account</h2>
       <p class="text-body-2 text-grey-darken-1">
         Create a new account to track your transactions.
       </p>
     </v-container>
-
-    <v-form class="px-6 pt-2" v-model="isFormValid" @submit.prevent="submitForm">
-      <v-text-field
-        label="Account Name"
-        variant="outlined"
-        v-model="form.name"
-        :rules="[rules.required]"
-        class="mb-4"
-      />
-      <v-text-field
-        label="Email"
-        variant="outlined"
-        v-model="form.email"
-        :rules="[rules.required, rules.email]"
-        class="mb-4"
-      />
-      <v-btn type="submit" color="primary" block class="text-none" :disabled="!isFormValid">
-        Create Account
-      </v-btn>
-    </v-form>
+    <AccountForm :disabled="isDisabled" @submit="handleSubmit" @delete="handleDelete" />
   </v-navigation-drawer>
+
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, defineProps, defineEmits, computed } from 'vue'
 import { useDisplay } from 'vuetify'
+import AccountForm from './AccountForm.vue'
+import { useCreateAccount } from '../hooks/useCreateAccount'
+
+const mutation = useCreateAccount()
+
+const isDisabled = computed(() => mutation.isPending.value)
+
+
+type AccountFormValues = {
+  name: string
+}
 
 const { smAndDown, width } = useDisplay()
 
 const drawerWidth = computed(() => (smAndDown.value ? width.value : 400))
 
-const props = defineProps(['modelValue'])
-const emit = defineEmits(['update:modelValue'])
+const props = defineProps<{ modelValue: boolean }>()
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+}>()
 
 const open = ref(props.modelValue)
 
@@ -66,18 +51,25 @@ watch(open, (newVal) => {
   emit('update:modelValue', newVal)
 })
 
-const isFormValid = ref(false)
-const form = ref({ name: '', email: '' })
-
-const rules = {
-  required: v => !!v || 'This field is required',
-  email: v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+const handleSubmit = (values: AccountFormValues) => {
+  mutation.mutate(values, {
+    onSuccess: () => {
+      open.value = false
+    }
+  })
 }
 
-const submitForm = () => {
-  if (isFormValid.value) {
-    console.log('Form submitted:', form.value)
-    open.value = false
-  }
+const handleDelete = () => {
+  console.log('Delete clicked')
 }
+
 </script>
+
+<style scoped>
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+</style>
