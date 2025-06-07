@@ -8,16 +8,14 @@
       </v-container>
     </v-main>
   </v-app>
-  <NewAccountDrawer v-model="drawerOpen" />
 </template>
 
 <script setup>
 // import { ref } from 'vue'
 // import { useAuthFetch } from '../features/api/authFetch'
-import NewAccountDrawer from '../features/api/accounts/components/NewAccount.vue'
 import { useNewAccount } from '../features/api/accounts/hooks/useNewAccount'
 
-const { drawerOpen, openDrawer } = useNewAccount()
+const { openDrawer } = useNewAccount()
 
 // const message = ref('Loading data from API...')
 

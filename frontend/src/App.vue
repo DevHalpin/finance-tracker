@@ -1,5 +1,6 @@
 <template>
     <v-app>
+        <NewAccountDrawer v-model="drawerOpen" />
         <HeaderView />
         <router-view />
     </v-app>
@@ -11,6 +12,9 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuth } from '@clerk/vue';
 import { watchEffect } from 'vue';
 import HeaderView from './views/HeaderView.vue';
+import NewAccountDrawer from './features/api/accounts/components/NewAccount.vue';
+import { useNewAccount } from './features/api/accounts/hooks/useNewAccount';
+const { drawerOpen } = useNewAccount();
 
 const { isLoaded, isSignedIn } = useAuth();
 const router = useRouter();

@@ -21,7 +21,7 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 if (!PUBLISHABLE_KEY) throw new Error('Missing Clerk key')
 
 const options: PluginOptions = {
-  position: POSITION.TOP_RIGHT,
+  position: POSITION.BOTTOM_RIGHT,
   timeout: 5000,
   closeOnClick: true,
 }
