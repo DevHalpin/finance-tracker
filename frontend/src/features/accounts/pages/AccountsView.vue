@@ -9,6 +9,8 @@
                 </v-btn>
             </div>
 
+            <ConfirmDialog :model-value="isOpen" @update:model-value="isOpen = $event" :message="message" :confirm="confirm" :close="close" />
+            
             <v-alert type="error" v-if="isError">Failed to load accounts.</v-alert>
 
             <div v-else-if="isLoading">
@@ -33,6 +35,10 @@ import { useNewAccount } from '../hooks/useNewAccount';
 import { useGetAccounts } from '../hooks/useGetAccounts';
 import { useBulkDeleteAccounts } from '../hooks/useBulkDelete';
 import DataTable from '../../../components/DataTable.vue';
+import ConfirmDialog from '../../../components/ConfirmDialog.vue';
+import { useConfirm } from '../../../hooks/useConfirm';
+
+const { isOpen, message, open, confirm, close } = useConfirm()
 
 const { openDrawer } = useNewAccount();
 const { data: accounts, isLoading, isError } = useGetAccounts();
@@ -63,8 +69,12 @@ const deleteItem = (rows: Record<string, number | string>[]) => {
         .filter((id): id is string | number => id !== undefined)
         .map(String);
     if (!ids.length || isDisabled.value) return;
+    open(
+        `Are you sure you want to delete ${ids.length} account${ids.length > 1 ? 's' : ''}?`,
+        () => deleteAccounts.mutate({ ids }),
+    );
 
-    deleteAccounts.mutate({ ids })
+    
 }
 
 </script>
