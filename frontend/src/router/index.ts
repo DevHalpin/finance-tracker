@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/DashBoard.vue'
-import NotFound from '../views/NotFound.vue'
-import SignIn from '../views/SignIn.vue'
-import SignUp from '../views/SignUp.vue'
-import AccountsView from '../views/AccountsView.vue'
+import Dashboard from '../views/Dashboard/DashBoard.vue'
+import NotFound from '../views/NotFound/NotFound.vue'
+import SignIn from '../views/SignIn/SignIn.vue'
+import SignUp from '../views/SignUp/SignUp.vue'
+import AccountsView from '../features/accounts/pages/AccountsView.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
