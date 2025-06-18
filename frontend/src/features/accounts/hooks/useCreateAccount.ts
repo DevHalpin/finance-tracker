@@ -1,5 +1,5 @@
 import { useQueryClient, useMutation } from '@tanstack/vue-query';
-import { useAuthFetch } from '../../authFetch';
+import { useAuthFetch } from '../../../hooks/useAuthFetch';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();

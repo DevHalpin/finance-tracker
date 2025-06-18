@@ -27,9 +27,21 @@
 
 <script setup lang="ts">
 import { Trash } from 'lucide-vue-next';
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed, defineProps, defineEmits, watch } from 'vue'
+const props = defineProps<{
+    headers: Record<string, string | boolean>[]
+    items: Record<string, number | string>[]
+    disabled?: boolean
+}>()
 
 const selected = ref<(number | string)[]>([])
+
+watch(() => props.items, () => {
+    selected.value = selected.value.filter(id => {
+        return props.items.some(item => item.id === id)
+    })
+}, { deep: true, immediate: true }
+)
 
 const selectedItems = computed(() => {
     return props.items.filter(item => {
@@ -38,11 +50,6 @@ const selectedItems = computed(() => {
     })
 })
 
-const props = defineProps<{
-    headers: Record<string, string | boolean>[]
-    items: Record<string, number | string>[]
-    disabled?: boolean
-}>()
 
 const emit = defineEmits<{
     (e: 'delete', items: Record<string, number | string>[]): void
@@ -61,6 +68,7 @@ const filteredItems = computed(() => {
 
 
 function onDelete(items: Record<string, number | string>[]) {
+    if (props.disabled || items.length === 0) return;
     emit('delete', items)
 }
 </script>

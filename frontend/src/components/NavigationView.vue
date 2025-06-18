@@ -27,7 +27,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import NavButton from './NavButton.vue';
+import NavButton from '../components/NavButton.vue';
 import { Menu } from 'lucide-vue-next';
 
 const isDrawerOpen = ref(false);

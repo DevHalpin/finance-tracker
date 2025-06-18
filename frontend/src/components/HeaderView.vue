@@ -21,7 +21,7 @@
 
 <script setup>
 import { UserButton } from '@clerk/vue';
-import HeaderLogo from './HeaderLogo.vue';
+import HeaderLogo from '../components/HeaderLogo.vue';
 import Navigation from './NavigationView.vue';
 import WelcomeMessage from './WelcomeMessage.vue';
 </script>

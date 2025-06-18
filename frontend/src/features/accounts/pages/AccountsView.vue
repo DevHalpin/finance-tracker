@@ -15,24 +15,13 @@
                 <v-card class="pa-4" elevation="0">
                     <v-skeleton-loader type="heading" class="mb-4" width="300px" />
                     <div class="d-flex justify-center" style="height: 500px;">
-                        <v-progress-circular
-                            indeterminate
-                            size="48"
-                            color="grey-lighten-1"
-                            class="my-auto"
-                        />
+                        <v-progress-circular indeterminate size="48" color="grey-lighten-1" class="my-auto" />
                     </div>
                 </v-card>
             </div>
 
-            <DataTable
-                v-else
-                :headers="headers"
-                :items="items"
-                @edit="editItem"
-                @delete="deleteItem"
-                :disabled="true"
-            />
+            <DataTable v-else :headers="headers" :items="items" @edit="editItem" @delete="deleteItem"
+                :disabled="isDisabled" />
         </v-card>
     </v-container>
 </template>
@@ -40,12 +29,16 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Plus } from 'lucide-vue-next';
-import { useNewAccount } from '../features/api/accounts/hooks/useNewAccount';
-import DataTable from '../features/api/accounts/components/DataTable.vue';
-import { useGetAccounts } from '../features/api/accounts/hooks/useGetAccounts';
+import { useNewAccount } from '../hooks/useNewAccount';
+import { useGetAccounts } from '../hooks/useGetAccounts';
+import { useBulkDeleteAccounts } from '../hooks/useBulkDelete';
+import DataTable from '../../../components/DataTable.vue';
 
 const { openDrawer } = useNewAccount();
 const { data: accounts, isLoading, isError } = useGetAccounts();
+const deleteAccounts = useBulkDeleteAccounts();
+
+const isDisabled = computed(() => isLoading.value || deleteAccounts.isPending.value);
 
 
 const headers = [
@@ -59,19 +52,20 @@ const items = computed(() =>
         name: account.name,
     })) ?? []
 );
-// const items: Record<string, string | number>[] = accounts.map(account => ({
-//   id: account.id,
-//   name: account.name,
-// }));
 
 const editItem = (item: Record<string, number | string>) => {
     console.log('Edit item:', item);
     // Implement edit logic here
 };
-const deleteItem = (item: Record<string, number | string>[]) => {
-    console.log('Delete item:', item);
-    // Implement delete logic here
-};
+const deleteItem = (rows: Record<string, number | string>[]) => {
+    const ids: string[] = rows
+        .map(r => r.id)
+        .filter((id): id is string | number => id !== undefined)
+        .map(String);
+    if (!ids.length || isDisabled.value) return;
+
+    deleteAccounts.mutate({ ids })
+}
 
 </script>
 

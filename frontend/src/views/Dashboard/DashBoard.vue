@@ -13,7 +13,7 @@
 <script setup>
 // import { ref } from 'vue'
 // import { useAuthFetch } from '../features/api/authFetch'
-import { useNewAccount } from '../features/api/accounts/hooks/useNewAccount'
+import { useNewAccount } from '../../features/accounts/hooks/useNewAccount'
 
 const { openDrawer } = useNewAccount()
 
