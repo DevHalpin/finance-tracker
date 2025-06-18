@@ -19,7 +19,7 @@
         </template>
         <template v-slot:[`footer.prepend`]>
             <div class="px-4 py-2 text-sm text-grey-700 mr-auto">
-                {{ selected.length }} of {{ filteredItems.length }} selected
+                {{ selected.length }} of {{ filteredItems.length }} row(s) selected
             </div>
         </template>
     </v-data-table>

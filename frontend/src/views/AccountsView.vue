@@ -8,35 +8,61 @@
                     Add New
                 </v-btn>
             </div>
-            <DataTable :headers="headers" :items="items" @edit="editItem" @delete="deleteItem" :disabled="true" />
+
+            <v-alert type="error" v-if="isError">Failed to load accounts.</v-alert>
+
+            <div v-else-if="isLoading">
+                <v-card class="pa-4" elevation="0">
+                    <v-skeleton-loader type="heading" class="mb-4" width="300px" />
+                    <div class="d-flex justify-center" style="height: 500px;">
+                        <v-progress-circular
+                            indeterminate
+                            size="48"
+                            color="grey-lighten-1"
+                            class="my-auto"
+                        />
+                    </div>
+                </v-card>
+            </div>
+
+            <DataTable
+                v-else
+                :headers="headers"
+                :items="items"
+                @edit="editItem"
+                @delete="deleteItem"
+                :disabled="true"
+            />
         </v-card>
     </v-container>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Plus } from 'lucide-vue-next';
 import { useNewAccount } from '../features/api/accounts/hooks/useNewAccount';
 import DataTable from '../features/api/accounts/components/DataTable.vue';
+import { useGetAccounts } from '../features/api/accounts/hooks/useGetAccounts';
+
+const { openDrawer } = useNewAccount();
+const { data: accounts, isLoading, isError } = useGetAccounts();
+
 
 const headers = [
     { title: 'Name', value: 'name', sortable: true },
-    { title: 'Email', value: 'email', sortable: true },
     { title: 'Actions', value: 'actions', sortable: false }
 ]
 
-const items = [
-    { id: 1, name: 'Jane Doe', email: 'jane@example.com' },
-    { id: 2, name: 'John Smith', email: 'john@example.com' },
-    { id: 3, name: 'Alice Johnson', email: 'alice@example.com' },
-    { id: 4, name: 'Bob Williams', email: 'bob@example.com' },
-    { id: 5, name: 'Charlie Brown', email: 'charlie@example.com' },
-    { id: 6, name: 'Diana Prince', email: ' diana@example.com' },
-    { id: 7, name: 'Bruce Wayne', email: 'bruce@example.com' },
-    { id: 8, name: 'Clark Kent', email: 'clark@example.com' },
-    { id: 9, name: 'Peter Parker', email: '     peter@example.com' },
-    { id: 10, name: 'Tony Stark', email: 'tony@example.com' },
-    { id: 11, name: 'Natasha Romanoff', email: 'natasha@example.com' },
-]
+const items = computed(() =>
+    accounts.value?.map(account => ({
+        id: account.id,
+        name: account.name,
+    })) ?? []
+);
+// const items: Record<string, string | number>[] = accounts.map(account => ({
+//   id: account.id,
+//   name: account.name,
+// }));
 
 const editItem = (item: Record<string, number | string>) => {
     console.log('Edit item:', item);
@@ -47,7 +73,6 @@ const deleteItem = (item: Record<string, number | string>[]) => {
     // Implement delete logic here
 };
 
-const { openDrawer } = useNewAccount();
 </script>
 
 <style scoped>
