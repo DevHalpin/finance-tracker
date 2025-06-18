@@ -12,6 +12,7 @@ def accounts(request):
     if request.method == 'GET':
         accounts = Account.objects.filter(user=request.user)
         serializer = AccountSerializer(accounts, many=True)
+
         return Response({ "accounts": serializer.data }, status=200)
 
     if request.method == 'POST':
