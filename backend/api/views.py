@@ -22,3 +22,17 @@ def accounts(request):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
+@api_view(['POST'])
+def delete_accounts(request):
+    account_ids = request.data.get('ids', [])
+    if not account_ids:
+        return Response({"error": "No account IDs provided"}, status=400)
+
+    if not isinstance(account_ids, list) or not all(isinstance(i, str) for i in account_ids):
+        return Response({"error": "Invalid format. 'ids' must be a list of integers."}, status=400)
+
+    deleted_count, _ = Account.objects.filter(user=request.user, id__in=account_ids).delete()
+    
+    return Response({"deleted": deleted_count}, status=200)
+
+
