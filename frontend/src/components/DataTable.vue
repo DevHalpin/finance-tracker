@@ -1,4 +1,5 @@
 <template>
+    <ConfirmDialog :title="title" :message="message" :model-value="isOpen" @update:model-value="val => isOpen = val" :confirm="handleConfirm" :close="handleCancel" />
     <div class="d-flex">
         <v-row>
             <v-col cols="6">
@@ -28,6 +29,11 @@
 <script setup lang="ts">
 import { Trash } from 'lucide-vue-next';
 import { ref, computed, defineProps, defineEmits, watch } from 'vue'
+import ConfirmDialog from './ConfirmDialog.vue';
+
+import { useConfirm } from '../hooks/useConfirm';
+
+const { isOpen, confirm, title, message, handleConfirm, handleCancel } = useConfirm("Are you sure?", "You are about to perform a bulk delete.")
 const props = defineProps<{
     headers: Record<string, string | boolean>[]
     items: Record<string, number | string>[]
@@ -67,8 +73,18 @@ const filteredItems = computed(() => {
 })
 
 
-function onDelete(items: Record<string, number | string>[]) {
-    if (props.disabled || items.length === 0) return;
-    emit('delete', items)
+const onDelete = async (items: Record<string, number | string>[]) => {
+  if (props.disabled || items.length === 0) return;
+
+  const names = items.map(i => i.name).filter(n => typeof n === 'string') as string[]
+  const titleText = `Delete ${items.length} item${items.length > 1 ? 's' : ''}?`
+  const messageText = names.length
+    ? `Are you sure you want to delete:\n- ${names.join('\n- ')}`
+    : `Are you sure you want to delete ${items.length} item(s)?`
+
+  const confirmed = await confirm(titleText, messageText)
+  if (!confirmed) return
+
+  emit('delete', items)
 }
 </script>
