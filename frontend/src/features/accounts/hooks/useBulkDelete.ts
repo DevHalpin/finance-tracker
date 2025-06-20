@@ -6,7 +6,7 @@ const toast = useToast();
 
 type Account = { id: number; name: string };
 interface FormValues {
-    ids: string[];
+    ids: number[];
 }
 
 export const useBulkDeleteAccounts = () => {

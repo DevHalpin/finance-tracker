@@ -74,10 +74,10 @@ const editItem = (item: Record<string, number | string>) => {
 };
 const deleteItem = (rows: Record<string, number | string>[]) => {
 
-    const ids: string[] = rows
+    const ids: number[] = rows
         .map(r => r.id)
         .filter((id): id is string | number => id !== undefined)
-        .map(String);
+        .map(Number);
 
 
     if (!ids.length || isDisabled.value) return;
