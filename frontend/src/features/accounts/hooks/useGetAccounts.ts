@@ -9,7 +9,7 @@ export const useGetAccounts = () => {
   return useQuery<Account[]>({
     queryKey: ['accounts'],
     queryFn: async () => {
-      const { accounts } = await authFetch<{ accounts: Account[] }>('/api/accounts/');
+      const accounts = await authFetch<Account[]>('/api/accounts/');
       return accounts ?? [];
     },
   });
