@@ -1,6 +1,30 @@
 <template>
     <v-container class="pb-10" style="margin-top: -7rem;" max-width="1570px">
-        <v-card class="elevation-1 pa-4">
+        <div v-if="isLoading">
+            <v-card class="elevation-1 pa-4">
+                <div class="d-flex flex-lg-row align-start align-lg-center justify-lg-space-between ga-2 mb-4">
+                    <v-skeleton-loader type="heading" width="150px" />
+                    <v-skeleton-loader type="button" width="100px" />
+                </div>
+
+                <v-skeleton-loader type="table-heading" class="mb-2" />
+
+                <v-container class="pa-0" fluid>
+                    <v-row v-for="i in 3" :key="i" class="align-center">
+                        <v-col cols="1" class="d-flex justify-center">
+                            <v-skeleton-loader width="24px" height="24px" class="rounded-sm" />
+                        </v-col>
+                        <v-col cols="8">
+                            <v-skeleton-loader type="text" width="70%" />
+                        </v-col>
+                        <v-col cols="3" class="text-end">
+                            <v-skeleton-loader type="avatar" width="40px" height="40px" />
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-card>
+        </div>
+        <v-card v-else class="elevation-1 pa-4">
             <div class="d-flex flex-lg-row align-start align-lg-center justify-lg-space-between ga-2">
                 <v-card-title class="text-h6 text-truncate">Accounts</v-card-title>
                 <v-btn color="primary" variant="flat" size="small" @click="openDrawer">
@@ -9,20 +33,9 @@
                 </v-btn>
             </div>
 
-            <ConfirmDialog :model-value="isOpen" @update:model-value="isOpen = $event" :message="message" :confirm="confirm" :close="close" />
-            
             <v-alert type="error" v-if="isError">Failed to load accounts.</v-alert>
 
-            <div v-else-if="isLoading">
-                <v-card class="pa-4" elevation="0">
-                    <v-skeleton-loader type="heading" class="mb-4" width="300px" />
-                    <div class="d-flex justify-center" style="height: 500px;">
-                        <v-progress-circular indeterminate size="48" color="grey-lighten-1" class="my-auto" />
-                    </div>
-                </v-card>
-            </div>
-
-            <DataTable v-else :headers="headers" :items="items" @edit="editItem" @delete="deleteItem"
+            <DataTable v-else :headers="headers" :items="accountsInfo" @edit="editItem" @delete="deleteItem"
                 :disabled="isDisabled" />
         </v-card>
     </v-container>
@@ -35,10 +48,6 @@ import { useNewAccount } from '../hooks/useNewAccount';
 import { useGetAccounts } from '../hooks/useGetAccounts';
 import { useBulkDeleteAccounts } from '../hooks/useBulkDelete';
 import DataTable from '../../../components/DataTable.vue';
-import ConfirmDialog from '../../../components/ConfirmDialog.vue';
-import { useConfirm } from '../../../hooks/useConfirm';
-
-const { isOpen, message, open, confirm, close } = useConfirm()
 
 const { openDrawer } = useNewAccount();
 const { data: accounts, isLoading, isError } = useGetAccounts();
@@ -52,7 +61,7 @@ const headers = [
     { title: 'Actions', value: 'actions', sortable: false }
 ]
 
-const items = computed(() =>
+const accountsInfo = computed(() =>
     accounts.value?.map(account => ({
         id: account.id,
         name: account.name,
@@ -64,17 +73,16 @@ const editItem = (item: Record<string, number | string>) => {
     // Implement edit logic here
 };
 const deleteItem = (rows: Record<string, number | string>[]) => {
+
     const ids: string[] = rows
         .map(r => r.id)
         .filter((id): id is string | number => id !== undefined)
         .map(String);
-    if (!ids.length || isDisabled.value) return;
-    open(
-        `Are you sure you want to delete ${ids.length} account${ids.length > 1 ? 's' : ''}?`,
-        () => deleteAccounts.mutate({ ids }),
-    );
 
-    
+
+    if (!ids.length || isDisabled.value) return;
+
+    deleteAccounts.mutate({ ids });
 }
 
 </script>

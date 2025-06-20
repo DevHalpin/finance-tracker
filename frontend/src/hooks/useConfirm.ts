@@ -1,35 +1,36 @@
 import { ref } from 'vue'
 
-export function useConfirm() {
-    const isOpen = ref(false)
-    const message = ref('')
-    let confirmCallback: (() => void) | null = null
+export const useConfirm = (defaultTitle: string, defaultMessage: string) => {
+  const isOpen = ref(false)
+  const title = ref(defaultTitle)
+  const message = ref(defaultMessage)
+  const resolver = ref<(confirmed: boolean) => void>()
 
-    function open(confirmMessage: string, onConfirm: () => void) {
-        message.value = confirmMessage
-        confirmCallback = onConfirm
-        isOpen.value = true
-    }
+  const confirm = (overrideTitle?: string, overrideMessage?: string) => {
+    title.value = overrideTitle ?? defaultTitle
+    message.value = overrideMessage ?? defaultMessage
+    isOpen.value = true
+    return new Promise<boolean>((resolve) => {
+      resolver.value = resolve
+    })
+  }
 
-    function confirm() {
-        if (confirmCallback) {
-            confirmCallback()
-        }
-        close()
-    }
-    
-    
-    function close() {
-        isOpen.value = false
-        message.value = ''
-        confirmCallback = null
-    }
+  const handleConfirm = () => {
+    resolver.value?.(true)
+    isOpen.value = false
+  }
 
-    return {
-        isOpen,
-        message,
-        open,
-        confirm,
-        close
-    }
+  const handleCancel = () => {
+    resolver.value?.(false)
+    isOpen.value = false
+  }
+
+  return {
+    isOpen,
+    title,
+    message,
+    confirm,
+    handleConfirm,
+    handleCancel,
+  }
 }
