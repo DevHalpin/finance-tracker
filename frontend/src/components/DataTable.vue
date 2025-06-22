@@ -14,9 +14,7 @@
 
     <v-data-table :headers="headers" :items="filteredItems" item-value="id" show-select v-model="selected" class="pt-4">
         <template v-slot:[`item.actions`]="{ item }">
-            <v-btn icon @click="onDelete([item])">
-                <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <Actions :id="item.id" />
         </template>
         <template v-slot:[`footer.prepend`]>
             <div class="px-4 py-2 text-sm text-grey-700 mr-auto">
@@ -30,6 +28,7 @@
 import { Trash } from 'lucide-vue-next';
 import { ref, computed, defineProps, defineEmits, watch } from 'vue'
 import ConfirmDialog from './ConfirmDialog.vue';
+import Actions from '../features/accounts/components/ActionsSection.vue';
 
 import { useConfirm } from '../hooks/useConfirm';
 

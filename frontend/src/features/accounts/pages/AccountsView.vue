@@ -58,7 +58,7 @@ const isDisabled = computed(() => isLoading.value || deleteAccounts.isPending.va
 
 const headers = [
     { title: 'Name', value: 'name', sortable: true },
-    { title: 'Actions', value: 'actions', sortable: false }
+    { title: '', value: 'actions', sortable: false }
 ]
 
 const accountsInfo = computed(() =>
