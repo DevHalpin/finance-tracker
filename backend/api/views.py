@@ -16,6 +16,12 @@ class AccountViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"id": instance.id, "message": "Deleted"}, status=200)
+
+
     @action(detail=False, methods=['post'], url_path='bulk-delete')
     def bulk_delete(self, request):
         account_ids = request.data.get('ids', [])
