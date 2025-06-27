@@ -1,16 +1,16 @@
 <template>
     <v-form ref="formRef" @submit.prevent="submitForm" v-model="isFormValid" class="pt-4">
-        <v-text-field class="mb-4" v-model="form.name" label="Account Name" placeholder="e.g. Cash, Bank, Credit Card"
+        <v-text-field class="mb-4" v-model="form.name" label="Category Name" placeholder="e.g. Cash, Bank, Credit Card"
             :rules="nameRules" :disabled="disabled" variant="outlined" density="comfortable" />
 
         <v-btn type="submit" :disabled="!isFormValid || disabled" color="primary" block class="mb-4">
-            {{ id ? "Save Changes" : "Create Account" }}
+            {{ id ? "Save Changes" : "Create Category" }}
         </v-btn>
 
         <v-btn v-if="!!id && onDelete" type="button" @click="handleDelete" :disabled="disabled" variant="outlined"
             block>
             <Trash class="mr-2" />
-            Delete Account
+            Delete Category
         </v-btn>
     </v-form>
 
@@ -22,12 +22,12 @@ import { VForm } from 'vuetify/components';
 import { Trash } from 'lucide-vue-next';
 
 export interface FormValues {
-  id: number | undefined
   name: string;
+  id: number | undefined
 }
 
 const props = defineProps<{
-  id: string | undefined;
+  id?: string;
   defaultValues?: FormValues;
   onSubmit: (values: FormValues) => void;
   onDelete?: () => void;
@@ -44,7 +44,7 @@ const isFormValid = ref(false);
 
 const form = ref<FormValues>({
   name: props.defaultValues?.name || '',
-  id: props.id ? parseInt(props.id) : undefined,
+  id: props.defaultValues?.id || undefined
 });
 
 const nameRules = [
@@ -57,7 +57,8 @@ watch(
   (newValues) => {
     form.value = { 
       name: newValues?.name || '',
-      id: form.value.id };
+      id: form.value.id
+    };
   }
 );
 

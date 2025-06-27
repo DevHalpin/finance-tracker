@@ -7,8 +7,8 @@
       </v-btn>
 
       <section>
-        <h2 class="text-h6 font-weight-bold mb-1">Edit Account</h2>
-        <p class="text-body-2 text-grey-darken-1">Edit an existing account.</p>
+        <h2 class="text-h6 font-weight-bold mb-1">Edit Category</h2>
+        <p class="text-body-2 text-grey-darken-1">Edit an existing category.</p>
       </section>
     </v-container>
 
@@ -17,11 +17,11 @@
     </template>
 
     <template v-else-if="isError">
-      <v-alert type="error" class="mt-4">Failed to load account</v-alert>
+      <v-alert type="error" class="mt-4">Failed to load category</v-alert>
     </template>
 
     <template v-else>
-      <AccountForm :id="id" :disabled="isDisabled" :default-values="accountData" @submit="handleSubmit"
+      <CategoryForm :id="reactiveId" :disabled="isDisabled" :default-values="categoryData" @submit="handleSubmit"
         @delete="handleDelete" />
     </template>
   </v-navigation-drawer>
@@ -30,24 +30,28 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
-import { useOpenAccount } from '../hooks/useOpenAccount';
-import { useUpdateAccount } from '../hooks/useUpdateAccount';
-import { useDeleteAccount } from '../hooks/useDeleteAccount';
-import { useGetAccount } from '../hooks/useGetAccount';
-import AccountForm from './AccountForm.vue';
+import { useOpenCategory } from '../hooks/useOpenCategory';
+import { useUpdateCategory } from '../hooks/useUpdateCategory';
+import { useDeleteCategory } from '../hooks/useDeleteCategory';
+import { useGetCategory } from '../hooks/useGetCategory';
+import CategoryForm from './CategoryForm.vue';
 import { useConfirm } from '../../../hooks/useConfirm';
-import type { FormValues } from './AccountForm.vue';
+import type { FormValues } from './CategoryForm.vue';
 import ConfirmDialog from '../../../components/ConfirmDialog.vue';
 
 // === Drawer state ===
-const { id, drawerOpen } = useOpenAccount();
+const { id, drawerOpen } = useOpenCategory();
 
-const { isOpen, confirm, title, message, handleConfirm, handleCancel } = useConfirm("Are you sure?", "You are about to delete this account!")
+const { isOpen, confirm, title, message, handleConfirm, handleCancel } = useConfirm("Are you sure?", "You are about to delete this category!")
+
+const reactiveId = computed(() =>
+  typeof id.value === 'string' ? id.value : undefined
+);
 
 // === Query + Mutation ===
-const { data: accountData, isLoading, isError } = useGetAccount(id);
-const editMutation = useUpdateAccount();
-const deleteMutation = useDeleteAccount();
+const { data: categoryData, isLoading, isError } = useGetCategory(reactiveId);
+const editMutation = useUpdateCategory();
+const deleteMutation = useDeleteCategory();
 const isDisabled = computed(() => editMutation.isPending.value || deleteMutation.isPending.value);
 
 const handleSubmit = async (values: FormValues) => {
@@ -62,12 +66,11 @@ const handleSubmit = async (values: FormValues) => {
 const handleDelete = async () => {
   const confirmed = await confirm()
 
-  if (!confirmed || !id.value ) return;
+  if (!confirmed || !id.value) return;
 
   const numberId = parseInt(id.value);
 
-
-  deleteMutation.mutate({id: numberId} , {
+  deleteMutation.mutate({id: numberId}, {
     onSuccess: () => {
       drawerOpen.value = false;
     },

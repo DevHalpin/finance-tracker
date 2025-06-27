@@ -14,7 +14,32 @@
 
     <v-data-table :headers="headers" :items="filteredItems" item-value="id" show-select v-model="selected" class="pt-4">
         <template v-slot:[`item.actions`]="{ item }">
-            <Actions :id="item.id" />
+            <v-menu location="bottom end" transition="scale-transition">
+                <template #activator="{ props: menuActivatorProps }">
+                <v-btn v-bind="menuActivatorProps" variant="text" class="pa-0">
+                    <v-icon>mdi-dots-horizontal</v-icon>
+                </v-btn>
+                </template>
+
+                <v-list>
+                <v-list-item @click="handleEdit(item)" :disabled="itemDisabled">
+                    <v-list-item-title>
+                    <span class="d-flex align-center ga-2">
+                        <Edit class="v-icon notranslate" />
+                        Edit
+                    </span>
+                    </v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="handleDelete(item)" :disabled="itemDisabled">
+                    <v-list-item-title>
+                    <span class="d-flex align-center ga-2">
+                        <Trash class="v-icon notranslate" />
+                        Delete
+                    </span>
+                    </v-list-item-title>
+                </v-list-item>
+                </v-list>
+            </v-menu>
         </template>
         <template v-slot:[`footer.prepend`]>
             <div class="px-4 py-2 text-sm text-grey-700 mr-auto">
@@ -25,10 +50,9 @@
 </template>
 
 <script setup lang="ts">
-import { Trash } from 'lucide-vue-next';
+import { Trash, Edit } from 'lucide-vue-next';
 import { ref, computed, defineProps, defineEmits, watch } from 'vue'
 import ConfirmDialog from './ConfirmDialog.vue';
-import Actions from '../features/accounts/components/ActionsSection.vue';
 
 import { useConfirm } from '../hooks/useConfirm';
 
@@ -36,11 +60,13 @@ const { isOpen, confirm, title, message, handleConfirm, handleCancel } = useConf
 
 type item = {
     id: string | number
+    name: string
 }
 const props = defineProps<{
     headers: Record<string, string | boolean>[]
     items: item[]
     disabled?: boolean
+    itemDisabled?: boolean
 }>()
 
 const selected = ref<(number | string)[]>([])
@@ -61,7 +87,9 @@ const selectedItems = computed(() => {
 
 
 const emit = defineEmits<{
-    (e: 'delete', items: Record<string, number | string>[]): void
+    (e: 'delete', items: item[]): void
+    (e: 'edit', item: item): void
+    (e: 'delete-item', item: item): void
 }>()
 
 const search = ref('')
@@ -76,7 +104,7 @@ const filteredItems = computed(() => {
 })
 
 
-const onDelete = async (items: Record<string, number | string>[]) => {
+const onDelete = async (items: item[]) => {
   if (props.disabled || items.length === 0) return;
 
   const names = items.map(i => i.name).filter(n => typeof n === 'string') as string[]
@@ -90,4 +118,16 @@ const onDelete = async (items: Record<string, number | string>[]) => {
 
   emit('delete', items)
 }
+
+const handleEdit = (item: item) => {
+    emit('edit', item)
+}
+
+const handleDelete = async (item: item) => {
+    const confirmed = await confirm(`Are you sure you want to delete ${item.name}?`, `You are about to delete ${item.name}. This action cannot be undone.`)
+    if (!confirmed) return
+    
+    emit('delete-item', item)
+}
+
 </script>

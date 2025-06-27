@@ -26,16 +26,16 @@
         </div>
         <v-card v-else class="elevation-1 pa-4">
             <div class="d-flex flex-lg-row align-start align-lg-center justify-lg-space-between ga-2">
-                <v-card-title class="text-h6 text-truncate">Accounts</v-card-title>
-                <v-btn color="primary" variant="flat" size="small" @click="openNewDrawer">
+                <v-card-title class="text-h6 text-truncate">Categories</v-card-title>
+                <v-btn color="primary" variant="flat" size="small" @click="newCategoryDrawer">
                     <Plus class="mr-2" />
                     Add New
                 </v-btn>
             </div>
 
-            <v-alert type="error" v-if="isError">Failed to load accounts.</v-alert>
+            <v-alert type="error" v-if="isError">Failed to load categories.</v-alert>
 
-            <DataTable v-else :headers="headers" :items="accountsInfo" @edit="editItem" @delete="deleteBulk" @delete-item="deleteItem"
+            <DataTable v-else :headers="headers" :items="categoriesInfo" @edit="editItem" @delete="deleteBulk" @delete-item="deleteItem"
                 :disabled="isDisabled" />
         </v-card>
     </v-container>
@@ -44,26 +44,25 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Plus } from 'lucide-vue-next';
-import { useNewAccount } from '../hooks/useNewAccount';
-import { useGetAccounts } from '../hooks/useGetAccounts';
-import { useBulkDeleteAccounts } from '../hooks/useBulkDelete';
-import { useDeleteAccount } from '../hooks/useDeleteAccount';
+import { useNewCategory } from '../hooks/useNewCategory';
+import { useOpenCategory } from '../hooks/useOpenCategory';
+import { useGetCategories } from '../hooks/useGetCategories';
+import { useBulkDeleteCategories } from '../hooks/useBulkDelete';
 import DataTable from '../../../components/DataTable.vue';
-import { useOpenAccount } from '../hooks/useOpenAccount';
+import { useDeleteCategory } from '../hooks/useDeleteCategory';
+
+const { openDrawer: newCategoryDrawer } = useNewCategory();
+const { openDrawer: openCategoryDrawer } = useOpenCategory();
+const { data: categories, isLoading, isError } = useGetCategories();
+const deleteCategories = useBulkDeleteCategories();
+const deleteCategory = useDeleteCategory();
+
+const isDisabled = computed(() => isLoading.value || deleteCategories.isPending.value);
 
 type item = {
     id: string | number;
     name: string;
 }
-
-const { openDrawer: openNewDrawer } = useNewAccount();
-const { openDrawer: openAccountDrawer } = useOpenAccount();
-const { data: accounts, isLoading, isError } = useGetAccounts();
-const deleteAccounts = useBulkDeleteAccounts();
-const deleteAccount = useDeleteAccount();
-
-
-const isDisabled = computed(() => isLoading.value || deleteAccounts.isPending.value);
 
 
 const headers = [
@@ -71,10 +70,10 @@ const headers = [
     { title: '', value: 'actions', sortable: false }
 ]
 
-const accountsInfo = computed(() =>
-    accounts.value?.map(account => ({
-        id: account.id,
-        name: account.name,
+const categoriesInfo = computed(() =>
+    categories.value?.map(category => ({
+        id: category.id,
+        name: category.name,
     })) ?? []
 );
 
@@ -91,17 +90,17 @@ const editItem = (item: item) => {
     if (typeof id === 'number'){
         id = id.toString()
     }
-    openAccountDrawer(id)
+    openCategoryDrawer(id)
 };
 
 const deleteItem = (item: item) => {
     if (!item.id) return;
-    if (typeof item.id === 'string') {
-        item.id = parseInt(item.id, 10);
+    if (typeof item.id === "string") {
+        item.id = parseInt(item.id);
     }
-    deleteAccount.mutate({id: item.id});
+    deleteCategory.mutate({ id: item.id });
 }
-const deleteBulk = (rows: Record<string, number | string>[]) => {
+const deleteBulk = (rows: item[]) => {
 
     const ids: number[] = rows
         .map(r => r.id)
@@ -111,7 +110,7 @@ const deleteBulk = (rows: Record<string, number | string>[]) => {
 
     if (!ids.length || isDisabled.value) return;
 
-    deleteAccounts.mutate({ ids });
+    deleteCategories.mutate({ ids });
 }
 
 </script>

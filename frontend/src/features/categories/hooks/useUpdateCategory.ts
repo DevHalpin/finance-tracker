@@ -4,18 +4,18 @@ import { useToast } from 'vue-toastification';
 
 const toast = useToast();
 
-type Account = { id: number; name: string };
+type Category = { id: number; name: string };
 interface FormValues {
-    id: number;
     name: string;
+    id: number;
 }
-export const useUpdateAccount = () => {
+export const useUpdateCategory = () => {
   const { authFetch } = useAuthFetch();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async ({ id, name }: FormValues) => {
-      const data = await authFetch<Account>(`/api/accounts/${id}/`, {
+      const data = await authFetch<Category>(`/api/categories/${id}/`, {
         method: 'PATCH',
         body: JSON.stringify({ name }),
       });
@@ -23,12 +23,12 @@ export const useUpdateAccount = () => {
     },
     onSuccess: (_data) => {
       const id = _data.id
-      toast.success("Account modified!");
-      queryClient.invalidateQueries({ queryKey: ['account', id] });
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      toast.success("Category modified!");
+      queryClient.invalidateQueries({ queryKey: ['category', id] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to modify account!';
+      const message = error instanceof Error ? error.message : 'Failed to modify category!';
       toast.error(message);
     }
   });
