@@ -33,9 +33,13 @@ import Actions from '../features/accounts/components/ActionsSection.vue';
 import { useConfirm } from '../hooks/useConfirm';
 
 const { isOpen, confirm, title, message, handleConfirm, handleCancel } = useConfirm("Are you sure?", "You are about to perform a bulk delete.")
+
+type item = {
+    id: string | number
+}
 const props = defineProps<{
     headers: Record<string, string | boolean>[]
-    items: Record<string, number | string>[]
+    items: item[]
     disabled?: boolean
 }>()
 
