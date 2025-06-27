@@ -4,27 +4,27 @@ import { useToast } from 'vue-toastification';
 
 const toast = useToast();
 
-type Account = { id: number; name: string };
+type Category = { id: number; name: string };
 
-export const useDeleteAccount = () => {
+export const useDeleteCategory = () => {
   const { authFetch } = useAuthFetch();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ id }: { id: number }) => {
-      const data = await authFetch<Account>(`/api/accounts/${id}/`, {
+    mutationFn: async ({id}: { id: number }) => {
+      const data = await authFetch<Category>(`/api/categories/${id}/`, {
         method: 'DELETE',
       });
       return data;
     },
     onSuccess: (_data) => {
       const id = _data.id
-      toast.success("Account deleted!");
-      queryClient.invalidateQueries({ queryKey: ['account', id] });
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      toast.success("Category deleted!");
+      queryClient.invalidateQueries({ queryKey: ['category', id] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
     },
     onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to delete account!';
+      const message = error instanceof Error ? error.message : 'Failed to delete category!';
       toast.error(message);
     }
   });

@@ -8,8 +8,8 @@ export const useGetAccount = (id: Ref<string | undefined>) => {
   const { authFetch } = useAuthFetch()
 
   return useQuery<Account>({
-    enabled: computed(() => !!id.value), // ✅ reactively tracks id
-    queryKey: computed(() => ['account', id.value]), // ✅ reactive key
+    enabled: computed(() => !!id.value),
+    queryKey: computed(() => ['account', id.value]),
     queryFn: async () => {
       const account = await authFetch<Account>(`/api/accounts/${id.value}/`)
       return account

@@ -18,15 +18,14 @@
       </v-btn>
 
       <section>
-        <h2 class="text-h6 font-weight-bold mb-1">New Account</h2>
+        <h2 class="text-h6 font-weight-bold mb-1">New Category</h2>
         <p class="text-body-2 text-grey-darken-1">
-          Create a new account to track your transactions.
+          Create a new category to track your transactions.
         </p>
       </section>
     </v-container>
 
-    <AccountForm
-      :id=undefined
+    <CategoryForm
       ref="formRef"
       :disabled="isDisabled"
       @submit="handleSubmit"
@@ -44,15 +43,15 @@ import type { ComponentPublicInstance } from 'vue'
 import { useDisplay } from 'vuetify'
 
 
-import AccountForm from './AccountForm.vue'
-import { useCreateAccount } from '../hooks/useCreateAccount'
+import CategoryForm from './CategoryForm.vue'
+import { useCreateCategory } from '../hooks/useCreateCategory'
 
 
-interface AccountFormValues {
+interface CategoryFormValues {
   name: string
 }
 
-interface AccountFormExposed {
+interface CategoryFormExposed {
   reset: () => void
 }
 
@@ -70,11 +69,11 @@ const open = computed({
 })
 
 // Form handling
-const formRef = ref<ComponentPublicInstance<AccountFormExposed> | null>(null)
-const mutation = useCreateAccount()
+const formRef = ref<ComponentPublicInstance<CategoryFormExposed> | null>(null)
+const mutation = useCreateCategory()
 const isDisabled = computed(() => mutation.isPending.value)
 
-const handleSubmit = (values: AccountFormValues) => {
+const handleSubmit = (values: CategoryFormValues) => {
   mutation.mutate(values, {
     onSuccess: () => {
       emit('created')
