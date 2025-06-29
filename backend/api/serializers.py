@@ -18,3 +18,21 @@ class CategorySerializer(serializers.ModelSerializer):
             'plaid_id': {'required': False, 'allow_null': True},
             'user': {'read_only': True},
         }
+
+class TransactionSerializer(serializers.ModelSerializer):
+    account_name = serializers.CharField(source='account.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
+    class Meta:
+        model = Transaction
+        fields = ['id', 'amount', 'payee', 'notes', 'date', 'account', 'category', 'account_name', 'category_name']
+        extra_kwargs = {
+            'account': {'required': True},
+            'category': {'required': False, 'allow_null': True},
+            'notes': {'required': False, 'allow_null': True},
+        }
+
+    def update(self, instance, validated_data):
+        if 'account' in validated_data and validated_data['account'] != instance.account:
+            raise serializers.ValidationError({'account': 'You cannot change the account of a transaction. Please delete and create a new transaction instead.'})
+        return super().update(instance, validated_data)
