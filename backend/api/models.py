@@ -20,3 +20,12 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Transaction(models.Model):
+    amount = models.IntegerField()
+    payee = models.CharField(max_length=100)
+    notes = models.TextField(null=True, blank=True)
+    date = models.DateField()
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+
