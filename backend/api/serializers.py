@@ -32,6 +32,16 @@ class TransactionSerializer(serializers.ModelSerializer):
             'notes': {'required': False, 'allow_null': True},
         }
 
+    def validate_account(self, value):
+        """
+        Check that the account is owned by the requesting user.
+        """
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            if value.user != request.user:
+                raise serializers.ValidationError("This account does not belong to the current user.")
+        return value
+
     def update(self, instance, validated_data):
         if 'account' in validated_data and validated_data['account'] != instance.account:
             raise serializers.ValidationError({'account': 'You cannot change the account of a transaction. Please delete and create a new transaction instead.'})
