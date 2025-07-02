@@ -8,8 +8,8 @@ export const useGetCategory = (id: Ref<string | undefined>) => {
   const { authFetch } = useAuthFetch()
 
   return useQuery<Category>({
-    enabled: computed(() => !!id.value), 
-    queryKey: computed(() => ['category', id.value]), 
+    enabled: computed(() => !!id.value),
+    queryKey: computed(() => ['category', id.value]),
     queryFn: async () => {
       const category = await authFetch<Category>(`/api/categories/${id.value}/`)
       return category

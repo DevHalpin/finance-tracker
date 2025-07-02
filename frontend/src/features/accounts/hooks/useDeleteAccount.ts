@@ -1,34 +1,20 @@
-import { useQueryClient, useMutation } from '@tanstack/vue-query';
-import { useAuthFetch } from '../../../hooks/useAuthFetch';
-import { useToast } from 'vue-toastification';
-
-const toast = useToast();
+import { useApiMutation } from '../../../hooks/useApiMutation';
 
 type Account = { id: number; name: string };
 
 export const useDeleteAccount = () => {
-  const { authFetch } = useAuthFetch();
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async ({ id }: { id: number }) => {
-      const data = await authFetch<Account>(`/api/accounts/${id}/`, {
-        method: 'DELETE',
-      });
-      return data;
-    },
-    onSuccess: (_data) => {
-      const id = _data.id
-      toast.success("Account deleted!");
-      queryClient.invalidateQueries({ queryKey: ['account', id] });
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
-    },
-    onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to delete account!';
-      toast.error(message);
-    }
-  });
-
-  return mutation;
+    return useApiMutation<Account, { id: number }>(
+        (authFetch, { id }) => authFetch(`/api/accounts/${id}/`, {
+            method: 'DELETE',
+        }),
+        {
+            getSuccessMessage: () => "Account deleted!",
+            getErrorMessage: (error) => (error instanceof Error ? error.message : 'Failed to delete account!'),
+            invalidateQueries: (queryClient, data, variables) => {
+                queryClient.invalidateQueries({ queryKey: ['account', variables.id] });
+                queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            },
+        }
+    );
 };
 

@@ -1,8 +1,4 @@
-import { useQueryClient, useMutation } from '@tanstack/vue-query';
-import { useAuthFetch } from '../../../hooks/useAuthFetch';
-import { useToast } from 'vue-toastification';
-
-const toast = useToast();
+import { useApiMutation } from '../../../hooks/useApiMutation';
 
 type Category = { id: number; name: string };
 interface FormValues {
@@ -10,27 +6,17 @@ interface FormValues {
 }
 
 export const useCreateCategory = () => {
-  const { authFetch } = useAuthFetch();
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async ({name} : FormValues) => {
-      const { data } = await authFetch<{ data: Category }>('/api/categories/', {
-        method: 'POST',
-        body: JSON.stringify({ name }),
-      });
-      return data;
-    },
-    onSuccess: () => {
-      toast.success("Category created!");
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-    },
-    onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to create Category!';
-      toast.error(message);
-    }
-  });
-
-  return mutation;
- 
+    return useApiMutation<Category, FormValues>(
+        (authFetch, { name }) => authFetch('/api/categories/', {
+            method: 'POST',
+            body: JSON.stringify({ name }),
+        }),
+        {
+            getSuccessMessage: () => "Category created!",
+            getErrorMessage: (error) => (error instanceof Error ? error.message : 'Failed to create Category!'),
+            invalidateQueries: (queryClient) => {
+                queryClient.invalidateQueries({ queryKey: ['categories'] });
+            },
+        }
+    );
 };

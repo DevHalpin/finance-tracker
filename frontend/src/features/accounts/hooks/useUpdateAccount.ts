@@ -1,38 +1,25 @@
-import { useQueryClient, useMutation } from '@tanstack/vue-query';
-import { useAuthFetch } from '../../../hooks/useAuthFetch';
-import { useToast } from 'vue-toastification';
-
-const toast = useToast();
+import { useApiMutation } from '../../../hooks/useApiMutation';
 
 type Account = { id: number; name: string };
 interface FormValues {
     id: number;
     name: string;
 }
+
 export const useUpdateAccount = () => {
-  const { authFetch } = useAuthFetch();
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: async ({ id, name }: FormValues) => {
-      const data = await authFetch<Account>(`/api/accounts/${id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({ name }),
-      });
-      return data;
-    },
-    onSuccess: (_data) => {
-      const id = _data.id
-      toast.success("Account modified!");
-      queryClient.invalidateQueries({ queryKey: ['account', id] });
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
-    },
-    onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to modify account!';
-      toast.error(message);
-    }
-  });
-
-  return mutation;
+    return useApiMutation<Account, FormValues>(
+        (authFetch, { id, name }) => authFetch(`/api/accounts/${id}/`, {
+            method: 'PATCH',
+            body: JSON.stringify({ name }),
+        }),
+        {
+            getSuccessMessage: () => "Account modified!",
+            getErrorMessage: (error) => (error instanceof Error ? error.message : 'Failed to modify account!'),
+            invalidateQueries: (queryClient, data, variables) => {
+                queryClient.invalidateQueries({ queryKey: ['account', variables.id] });
+                queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            },
+        }
+    );
 };
 
