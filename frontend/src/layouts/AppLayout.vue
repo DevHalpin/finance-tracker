@@ -1,8 +1,8 @@
 <template>
     <v-app>
         <NewAccountDrawer v-model="newAccountOpen" />
-        <EditAccountDrawer v-model="editAccountOpen" />
-        <EditCategoryDrawer v-model="editCategoryOpen" />
+        <EditAccountDrawer v-model="editAccountOpen" :id="editAccountId" />
+        <EditCategoryDrawer v-model="editCategoryOpen" :id="editCategoryId" />
         <NewCategoryDrawer v-model="newCategoryOpen" />
         <HeaderView />
         <router-view />
@@ -20,7 +20,7 @@ import { useOpenAccount } from '../features/accounts/hooks/useOpenAccount';
 import { useNewCategory } from '../features/categories/hooks/useNewCategory';
 import { useOpenCategory } from '../features/categories/hooks/useOpenCategory';
 const { drawerOpen: newAccountOpen } = useNewAccount();
-const { drawerOpen: editAccountOpen } = useOpenAccount();
+const { drawerOpen: editAccountOpen, id: editAccountId } = useOpenAccount();
 const { drawerOpen: newCategoryOpen } = useNewCategory();
-const { drawerOpen: editCategoryOpen } = useOpenCategory();
+const { drawerOpen: editCategoryOpen, id: editCategoryId } = useOpenCategory();
 </script>

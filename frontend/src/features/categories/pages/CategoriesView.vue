@@ -35,8 +35,8 @@
 
             <v-alert type="error" v-if="isError">Failed to load categories.</v-alert>
 
-            <DataTable v-else :headers="headers" :items="categoriesInfo" @edit="editItem" @delete="deleteBulk" @delete-item="deleteItem"
-                :disabled="isDisabled" />
+            <DataTable v-else :headers="headers" :items="categoriesInfo" @delete="deleteBulk"
+                :disabled="isDisabled" :actions-component="CategoryActions" />
         </v-card>
     </v-container>
 </template>
@@ -45,24 +45,16 @@
 import { computed } from 'vue';
 import { Plus } from 'lucide-vue-next';
 import { useNewCategory } from '../hooks/useNewCategory';
-import { useOpenCategory } from '../hooks/useOpenCategory';
 import { useGetCategories } from '../hooks/useGetCategories';
 import { useBulkDeleteCategories } from '../hooks/useBulkDelete';
 import DataTable from '../../../components/DataTable.vue';
-import { useDeleteCategory } from '../hooks/useDeleteCategory';
+import CategoryActions from '../components/CategoryActions.vue';
 
 const { openDrawer: newCategoryDrawer } = useNewCategory();
-const { openDrawer: openCategoryDrawer } = useOpenCategory();
 const { data: categories, isLoading, isError } = useGetCategories();
 const deleteCategories = useBulkDeleteCategories();
-const deleteCategory = useDeleteCategory();
 
 const isDisabled = computed(() => isLoading.value || deleteCategories.isPending.value);
-
-type item = {
-    id: string | number;
-    name: string;
-}
 
 
 const headers = [
@@ -77,30 +69,7 @@ const categoriesInfo = computed(() =>
     })) ?? []
 );
 
-const editItem = (item: item) => {
-     if (!item) {
-        console.warn('Edit action triggered without a valid item')
-        return
-    }
-    let id = item.id;
-    if (typeof id !== 'string' && typeof id !== 'number') {
-        console.warn('Edit action triggered with an invalid ID type:', typeof id)
-        return
-    }
-    if (typeof id === 'number'){
-        id = id.toString()
-    }
-    openCategoryDrawer(id)
-};
-
-const deleteItem = (item: item) => {
-    if (!item.id) return;
-    if (typeof item.id === "string") {
-        item.id = parseInt(item.id);
-    }
-    deleteCategory.mutate({ id: item.id });
-}
-const deleteBulk = (rows: item[]) => {
+const deleteBulk = (rows: {id: string | number, name: string}[]) => {
 
     const ids: number[] = rows
         .map(r => r.id)

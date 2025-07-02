@@ -35,8 +35,8 @@
 
             <v-alert type="error" v-if="isError">Failed to load accounts.</v-alert>
 
-            <DataTable v-else :headers="headers" :items="accountsInfo" @edit="editItem" @delete="deleteBulk" @delete-item="deleteItem"
-                :disabled="isDisabled" />
+            <DataTable v-else :headers="headers" :items="accountsInfo" @delete="deleteBulk"
+                :disabled="isDisabled" :actions-component="AccountActions" />
         </v-card>
     </v-container>
 </template>
@@ -44,23 +44,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Plus } from 'lucide-vue-next';
+import AccountActions from '../components/AccountActions.vue';
 import { useNewAccount } from '../hooks/useNewAccount';
 import { useGetAccounts } from '../hooks/useGetAccounts';
 import { useBulkDeleteAccounts } from '../hooks/useBulkDelete';
-import { useDeleteAccount } from '../hooks/useDeleteAccount';
 import DataTable from '../../../components/DataTable.vue';
-import { useOpenAccount } from '../hooks/useOpenAccount';
-
-type item = {
-    id: string | number;
-    name: string;
-}
 
 const { openDrawer: openNewDrawer } = useNewAccount();
-const { openDrawer: openAccountDrawer } = useOpenAccount();
 const { data: accounts, isLoading, isError } = useGetAccounts();
 const deleteAccounts = useBulkDeleteAccounts();
-const deleteAccount = useDeleteAccount();
 
 
 const isDisabled = computed(() => isLoading.value || deleteAccounts.isPending.value);
@@ -78,29 +70,6 @@ const accountsInfo = computed(() =>
     })) ?? []
 );
 
-const editItem = (item: item) => {
-     if (!item) {
-        console.warn('Edit action triggered without a valid item')
-        return
-    }
-    let id = item.id;
-    if (typeof id !== 'string' && typeof id !== 'number') {
-        console.warn('Edit action triggered with an invalid ID type:', typeof id)
-        return
-    }
-    if (typeof id === 'number'){
-        id = id.toString()
-    }
-    openAccountDrawer(id)
-};
-
-const deleteItem = (item: item) => {
-    if (!item.id) return;
-    if (typeof item.id === 'string') {
-        item.id = parseInt(item.id, 10);
-    }
-    deleteAccount.mutate({id: item.id});
-}
 const deleteBulk = (rows: Record<string, number | string>[]) => {
 
     const ids: number[] = rows
