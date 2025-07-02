@@ -27,6 +27,10 @@ export const useAuthFetch = () => {
         throw new Error(`API request failed: ${response.status}`);
       }
 
+      if (response.status === 204) {
+        return null as T;
+      }
+
       return await response.json() as T;
     }
     catch (error) {
