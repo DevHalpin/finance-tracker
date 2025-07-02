@@ -1,18 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../views/Dashboard/DashBoard.vue'
-import NotFound from '../views/NotFound/NotFound.vue'
-import SignIn from '../views/SignIn/SignIn.vue'
-import SignUp from '../views/SignUp/SignUp.vue'
-import AccountsView from '../features/accounts/pages/AccountsView.vue'
-import CategoriesView from '../features/categories/pages/CategoriesView.vue'
-
+import { useAuth } from '@clerk/vue'
+import { watch } from 'vue'
 const routes = [
-  { path: '/', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/sign-in', name: 'Sign In', component: SignIn },
-  { path: '/sign-up', name: 'Sign Up', component: SignUp },
-  { path: '/accounts', name: 'Accounts', component: AccountsView, meta: { requiresAuth: true } },
-  { path: '/categories', name: 'Categories', component: CategoriesView, meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
+  { path: '/', name: 'Dashboard', component: () => import('../views/Dashboard/DashBoard.vue'), meta: { requiresAuth: true } },
+  { path: '/sign-in', name: 'Sign In', component: () => import('../views/SignIn/SignIn.vue') },
+  { path: '/sign-up', name: 'Sign Up', component: () => import('../views/SignUp/SignUp.vue') },
+  { path: '/accounts', name: 'Accounts', component: () => import('../features/accounts/pages/AccountsView.vue'), meta: { requiresAuth: true } },
+  { path: '/categories', name: 'Categories', component: () => import('../features/categories/pages/CategoriesView.vue'), meta: { requiresAuth: true } },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/NotFound/NotFound.vue') },
 ]
 
 const router = createRouter({
@@ -20,4 +15,27 @@ const router = createRouter({
   routes,
 })
 
-export default router
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.meta.requiresAuth;
+
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded.value) {
+    const unwatch = watch(isLoaded, () => {
+      if (requiresAuth && !isSignedIn.value) {
+        next({ name: 'Sign In', query: { redirect: to.fullPath } });
+      } else {
+        next();
+      }
+      unwatch();
+    })
+  } else {
+    if (requiresAuth && !isSignedIn.value) {
+      next({ name: 'Sign In', query: { redirect: to.fullPath } });
+    } else {
+      next();
+    }
+  }
+});
+
+export default router;

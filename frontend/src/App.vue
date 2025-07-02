@@ -10,10 +10,6 @@
 </template>
 
 <script setup lang="ts">
-// import { watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuth } from '@clerk/vue';
-import { watchEffect } from 'vue';
 import HeaderView from './components/HeaderView.vue';
 import NewAccountDrawer from './features/accounts/components/NewAccount.vue';
 import EditAccountDrawer from './features/accounts/components/EditAccount.vue';
@@ -28,18 +24,6 @@ const { drawerOpen: editAccountOpen } = useOpenAccount();
 const { drawerOpen: newCategoryOpen } = useNewCategory();
 const { drawerOpen: editCategoryOpen } = useOpenCategory();
 
-const { isLoaded, isSignedIn } = useAuth();
-const router = useRouter();
-const route = useRoute();
-
-watchEffect(() => {
-    if (!isLoaded.value) return
-
-    // Only redirect if trying to access a protected page
-    if (route.meta.requiresAuth && !isSignedIn.value) {
-        router.push('/sign-in')
-    }
-})
 
 </script>
 
