@@ -1,6 +1,7 @@
 import jwt
 import requests
 import os
+import json
 from jwt import algorithms
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -14,27 +15,22 @@ load_dotenv(os.path.join(settings.BASE_DIR, '.env'))
 CLERK_JWKS_URL = os.getenv('JWKS_URL')
 CLERK_ISSUER = os.getenv('CLERK_ISSUER')
 
-def get_clerk_public_keys():
+def get_clerk_jwks_data():
     """
-    Retrieve the public keys for the Clerk JWKS endpoint using a cache to avoid repeated requests.
-    The cache is set to expire after 24 hours.
+    Retrieves Clerk's JWKS data, using a cache to avoid repeated network requests.
+    Caches the raw JSON response text for 24 hours.
     """
-    public_keys = cache.get('clerk_jwks')
-    if public_keys is None:
+    jwks_data = cache.get('clerk_jwks_raw')
+    if jwks_data is None:
         try:
-            jwks_response = requests.get(CLERK_JWKS_URL)
-            jwks_response.raise_for_status()
-            jwks = jwks_response.json()
-
-            public_keys = {
-                jwk['kid']: algorithms.RSAAlgorithm.from_jwk(jwk)
-                for jwk in jwks['keys']
-            }
-
-            cache.set('clerk_jwks', public_keys, 86400) 
-        except (requests.RequestException, KeyError, ValueError) as e:
-            raise AuthenticationFailed(f"Could not fetch, parse, or process JWKS: {e}")
-    return public_keys
+            response = requests.get(CLERK_JWKS_URL)
+            response.raise_for_status()
+            jwks_data = response.json()
+            # Cache the raw JSON data for 24 hours
+            cache.set('clerk_jwks_raw', jwks_data, timeout=86400)
+        except requests.RequestException as e:
+            raise AuthenticationFailed(f"Could not fetch JWKS: {e}")
+    return jwks_data
 
 class ClerkJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -44,23 +40,33 @@ class ClerkJWTAuthentication(BaseAuthentication):
         
         token = auth_header.split(' ')[1]
 
-        try: 
-            public_keys = get_clerk_public_keys()
+        try:
+            jwks = get_clerk_jwks_data()
+            public_keys = {
+                jwk['kid']: algorithms.RSAAlgorithm.from_jwk(jwk)
+                for jwk in jwks['keys']
+            }
+
             unverified_header = jwt.get_unverified_header(token)
             key_id = unverified_header.get('kid')
-            
+
             if not key_id:
                 raise AuthenticationFailed('JWT header missing key ID (kid).')
 
             key = public_keys.get(key_id)
 
             if key is None:
-                cache.delete('clerk_jwks')
-                public_keys = get_clerk_public_keys()
+                # Key not found, cache might be stale. Clear and retry once.
+                cache.delete('clerk_jwks_raw')
+                jwks = get_clerk_jwks_data()
+                public_keys = {
+                    jwk['kid']: algorithms.RSAAlgorithm.from_jwk(jwk)
+                    for jwk in jwks['keys']
+                }
                 key = public_keys.get(key_id)
                 if key is None:
                     raise AuthenticationFailed('Public key for token could not be found.')
-                
+
             payload = jwt.decode(
                 token,
                 key=key,
@@ -80,5 +86,7 @@ class ClerkJWTAuthentication(BaseAuthentication):
 
             return (user, payload)
 
-        except Exception as e:
+        except jwt.InvalidTokenError as e:
             raise AuthenticationFailed(f'JWT validation failed: {str(e)}')
+        except Exception as e:
+            raise AuthenticationFailed(f'An unexpected error occurred during authentication: {str(e)}')
