@@ -7,11 +7,7 @@ import type { PluginOptions } from 'vue-toastification';
 import 'vue-toastification/dist/index.css'
 
 // Vuetify
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import vuetify from './plugins/vuetify'
 
 // Clerk
 import { clerkPlugin } from '@clerk/vue'
@@ -25,15 +21,6 @@ const options: PluginOptions = {
   timeout: 5000,
   closeOnClick: true,
 }
-
-const vuetify = createVuetify({
-  components,
-  directives,
-  icons: {
-    defaultSet: 'mdi',
-  },
-})
-
 
 const app = createApp(App)
 
