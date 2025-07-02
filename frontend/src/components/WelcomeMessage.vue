@@ -1,7 +1,7 @@
 <template>
 <div class="space-y-2 mb-4">
     <h2 class="header">
-        Welcome Back{{ isLoaded ? ", " : " " }}{{ user?.firstName }}
+        Welcome Back{{ isAuthenticated ? ", " : " " }}{{ user?.name }}
     </h2>
     <p class="title">
         This is your Financial Overview
@@ -11,11 +11,9 @@
 </template>
 
 <script setup>
-import { useUser } from '@clerk/vue';
+import { useAuth0 } from '@auth0/auth0-vue';
 
-const { user, isLoaded} = useUser();
-
-
+const { user, isAuthenticated } = useAuth0();
 </script>
 
 <style scoped>

@@ -1,3 +1,4 @@
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -9,27 +10,31 @@ import 'vue-toastification/dist/index.css'
 // Vuetify
 import vuetify from './plugins/vuetify'
 
-// Clerk
-import { clerkPlugin } from '@clerk/vue'
-import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
-
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
-if (!PUBLISHABLE_KEY) throw new Error('Missing Clerk key')
-
-const options: PluginOptions = {
-  position: POSITION.BOTTOM_RIGHT,
-  timeout: 5000,
-  closeOnClick: true,
-}
+import { createAuth0 } from '@auth0/auth0-vue'
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 
 const app = createApp(App)
 
 const queryClient = new QueryClient()
 
+const options: PluginOptions = {
+  position: POSITION.BOTTOM_RIGHT,
+  timeout: 5000,
+  closeOnClick: true
+}
 app.use(router)
 app.use(vuetify)
 app.use(Toast, options)
-app.use(clerkPlugin, { publishableKey: PUBLISHABLE_KEY })
+app.use(
+  createAuth0({
+    domain: import.meta.env.VITE_AUTH0_DOMAIN,
+    clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+    authorizationParams: {
+      redirect_uri: `${window.location.origin}`,
+      audience: 'https://SECRET_REMOVED/api/v2/'
+    }
+  })
+)
 app.use(VueQueryPlugin, { queryClient })
 
 app.mount('#app')

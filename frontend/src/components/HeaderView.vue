@@ -6,12 +6,9 @@
                     <HeaderLogo />
                     <Navigation />
                 </div>
-                <ClerkLoading>
-                    <Loader2 class="animate-spin size-8 text-slate-400" />
-                </ClerkLoading>
-                <ClerkLoaded>
-                    <UserButton />
-                </ClerkLoaded>
+                <div v-if="isAuthenticated">
+                    <button @click="logout" class="logout-button">Logout</button>
+                </div>
             </div>
             <WelcomeMessage />
         </div>
@@ -20,15 +17,27 @@
 
 
 <script setup>
-import { UserButton } from '@clerk/vue';
+import { useAuth0 } from '@auth0/auth0-vue';
 import HeaderLogo from '../components/HeaderLogo.vue';
 import Navigation from './NavigationView.vue';
 import WelcomeMessage from './WelcomeMessage.vue';
+
+const { isAuthenticated, logout } = useAuth0();
 </script>
 
 <style scoped>
 .gradient-header {
     background-image: linear-gradient(to bottom, #1D4ED8, #3B82F6);
+}
+
+.logout-button {
+    background-color: #fff;
+    color: #1D4ED8;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
 }
 
 /* Custom container width (matches Tailwind's max-w-screen-2xl) */

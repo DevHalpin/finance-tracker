@@ -14,14 +14,14 @@
     "sass": "^1.89.0",
     "sass-loader": "^13.0.0",
     "typescript-eslint": "^8.32.1",
+    "vite-plugin-mkcert": "^1.17.8",
     "vue-tsc": "^2.2.10"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "@clerk/clerk-js": "^5.67.4",
-    "@clerk/vue": "^1.8.4",
+    "@auth0/auth0-vue": "^2.3.3",
     "@mdi/font": "^7.4.47",
     "@tanstack/vue-query": "^5.79.0",
     "lucide-vue": "^0.511.0",
@@ -40,7 +40,6 @@
     "format": "bun eslint --fix --ext .ts,.vue src"
   },
   "trustedDependencies": [
-    "@clerk/shared",
     "@parcel/watcher",
     "unrs-resolver"
   ]

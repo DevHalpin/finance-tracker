@@ -6,7 +6,7 @@
                 <p>Log in or create an account to get back to your dashboard.</p>
             </div>
             <div class="sign-up-container">
-                <SignUp routing="path" path="/sign-up" />
+                <button @click="signup" class="signup-button">Sign Up</button>
             </div>
         </div>
         <div class="image-container">
@@ -16,7 +16,17 @@
 </template>
 
 <script setup>
-import { SignUp } from '@clerk/vue';
+import { useAuth0 } from '@auth0/auth0-vue';
+
+const { loginWithRedirect } = useAuth0();
+
+const signup = () => {
+  loginWithRedirect({
+    authorizationParams: {
+      screen_hint: 'signup',
+    }
+  });
+};
 </script>
 
 <style scoped>
@@ -68,6 +78,16 @@ import { SignUp } from '@clerk/vue';
     margin-top: 4rem;
     justify-content: center;
     align-items: center;
+}
+
+.signup-button {
+    background-color: #2563EB;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
 }
 
 @media (min-width: 1024px) {

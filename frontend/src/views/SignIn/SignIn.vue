@@ -6,7 +6,7 @@
                 <p>Log in or create an account to get back to your dashboard.</p>
             </div>
             <div class="sign-in-container">
-                <SignIn routing="path" path="/sign-in" />
+                <button @click="login" class="login-button">Log In</button>
             </div>
         </div>
         <div class="image-container">
@@ -16,7 +16,14 @@
 </template>
 
 <script setup>
-import { SignIn } from '@clerk/vue';
+import { useAuth0 } from '@auth0/auth0-vue';
+
+const { loginWithRedirect } = useAuth0();
+
+const login = () => {
+  console.log('Redirect URI:', window.location.origin);
+  loginWithRedirect();
+};
 </script>
 
 <style scoped>
@@ -65,6 +72,16 @@ import { SignIn } from '@clerk/vue';
     margin-top: 4rem;
     justify-content: center;
     align-items: center;
+}
+
+.login-button {
+    background-color: #2563EB;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
 }
 
 @media (min-width: 1024px) {
