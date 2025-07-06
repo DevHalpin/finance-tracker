@@ -28,7 +28,6 @@ class UserOwnedViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        # A 204 No Content response is standard for successful DELETE requests.
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class AccountViewSet(UserOwnedViewSet, BulkDeleteMixin):
@@ -52,7 +51,6 @@ class TransactionViewSet(viewsets.ModelViewSet, BulkDeleteMixin):
         if not account_id:
             raise ValidationError({"account": "This query parameter is required."})
 
-        # Ensure the user can only access transactions from their own accounts
         queryset = Transaction.objects.filter(account__id=account_id, account__user=user)
 
         try:
@@ -66,10 +64,19 @@ class TransactionViewSet(viewsets.ModelViewSet, BulkDeleteMixin):
         return queryset.filter(date__range=(from_date, to_date))
 
     def perform_create(self, serializer):
-        # This logic is specific to transactions, so it remains here.
         serializer.save()
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['post'], url_path='bulk-create')
+    def bulk_create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_bulk_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_bulk_create(self, serializer):
+        serializer.save()
