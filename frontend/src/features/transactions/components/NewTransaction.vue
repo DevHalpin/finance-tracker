@@ -14,7 +14,7 @@
 import { ref, computed } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import SideSheet from '../../../components/SideSheet.vue';
-import TransactionForm, { type FormValues as TransactionFormValues } from './TransactionForm.vue';
+import TransactionForm from './TransactionForm.vue';
 import { useCreateTransaction } from '../hooks/useCreateTransaction';
 import { useCreateCategory } from '../../categories/hooks/useCreateCategory';
 import { useGetCategories } from '../../categories/hooks/useGetCategories';
@@ -24,8 +24,12 @@ import { convertAmountToMilliunits } from '../../../libs/utils';
 
 const categoryMutation = useCreateCategory();
 const categoryQuery = useGetCategories();
-const onCreateCategory = (name: string) => {
-    categoryMutation.mutate({ name });
+const onCreateCategory = async (name: string) => {
+    const newCategory = await categoryMutation.mutateAsync({ name });
+    return {
+        label: newCategory.name,
+        value: String(newCategory.id)
+    }
 }
 
 const categoryOptions = computed(() => (categoryQuery.data?.value ?? []).map(category => ({
@@ -36,8 +40,12 @@ const categoryOptions = computed(() => (categoryQuery.data?.value ?? []).map(cat
 const accountQuery = useGetAccounts();
 const accountMutation = useCreateAccount();
 
-const onCreateAccount = (name: string) => {
-    accountMutation.mutate({ name });
+const onCreateAccount = async (name: string) => {
+    const newAccount = await accountMutation.mutateAsync({ name });
+    return {
+        label: newAccount.name,
+        value: String(newAccount.id)
+    }
 }
 
 const accountOptions = computed(() => (accountQuery.data?.value ?? []).map(account => ({
@@ -60,6 +68,21 @@ const open = computed({
     set: (val) => emit('update:modelValue', val),
 });
 
+type TransactionFormValues = {
+    amount: string;
+    payee: string;
+    date: string;
+    account: {
+        label: string;
+        value: string;
+    }; 
+    category: {
+        label: string;
+        value: string;
+    } | null; 
+    notes: string | null;
+}
+
 const formRef = ref<ComponentPublicInstance<TransactionFormExposed> | null>(null);
 const createMutation = useCreateTransaction();
 const isDisabled = computed(() => createMutation.isPending.value || categoryMutation.isPending.value || accountMutation.isPending.value);
@@ -67,15 +90,14 @@ const isLoading = computed(() => categoryQuery.isLoading.value || accountQuery.i
 const handleSubmit = (values: TransactionFormValues) => {
     const amount = parseFloat(values.amount);
     const amountInMilliunits = convertAmountToMilliunits(amount)
-    console.log(values.account.valueOf())
+    console.log(values)
     createMutation.mutate({
         amount: amountInMilliunits,
         payee: values.payee,
         date: values.date,
-        account: "42",
-        category: "12",
+        account: values.account.value,
+        category: values.category ? values.category.value : undefined,
         notes: values.notes ? values.notes : undefined,
     })
-    // console.log(values)
 };
 </script>

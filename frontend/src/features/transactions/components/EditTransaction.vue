@@ -37,8 +37,14 @@ type TransactionValues = {
     amount: string;
     payee: string;
     date: string;
-    account: string;
-    category: string | null;
+    account: {
+        label: string;
+        value: string;
+    };
+    category: {
+        label: string;
+        value: string;
+    } | null;
     notes: string | null;
 }
 
@@ -68,15 +74,31 @@ const defaultValues = computed(() => {
     return {
         ...transactionData.value,
         amount: String(transactionData.value.amount),
-        account: transactionData.value.account,
-        category: transactionData.value.category,
+        account: {
+            label: transactionData.value.account_name,
+            value: transactionData.value.account
+        },
+        category: {
+            label: transactionData.value.category_name ?? '',
+            value: transactionData.value.category ?? '',
+        },
     }
 })
 
 const categoryMutation = useCreateCategory();
 const categoryQuery = useGetCategories();
-const onCreateCategory = (name: string) => {
-    categoryMutation.mutate({ name });
+const onCreateCategory = async (name: string) => {
+    const newCategory = await categoryMutation.mutateAsync({ name });
+    if (defaultValues.value) {
+        defaultValues.value.category = {
+            label: newCategory.name,
+            value: String(newCategory.id)
+        };
+    }
+    return {
+        label: newCategory.name,
+        value: String(newCategory.id)
+    }
 }
 
 const categoryOptions = computed(() => (categoryQuery.data?.value ?? []).map(category => ({
@@ -87,8 +109,18 @@ const categoryOptions = computed(() => (categoryQuery.data?.value ?? []).map(cat
 const accountQuery = useGetAccounts();
 const accountMutation = useCreateAccount();
 
-const onCreateAccount = (name: string) => {
-    accountMutation.mutate({ name });
+const onCreateAccount = async (name: string) => {
+    const newAccount = await accountMutation.mutateAsync({ name });
+    if (defaultValues.value) {
+        defaultValues.value.account = {
+            label: newAccount.name,
+            value: String(newAccount.id)
+        };
+    }
+    return {
+        label: newAccount.name,
+        value: String(newAccount.id)
+    }
 }
 
 const accountOptions = computed(() => (accountQuery.data?.value ?? []).map(account => ({
@@ -109,8 +141,8 @@ const handleSubmit = async (values: TransactionValues) => {
         payee: values.payee,
         date: values.date,
         amount,
-        account: Number(values.account),
-        category: values.category ? Number(values.category) : undefined,
+        account: Number(values.account.value),
+        category: values.category ? Number(values.category.value) : undefined,
         notes: values.notes ?? undefined,
     }, {
         onSuccess: () => {

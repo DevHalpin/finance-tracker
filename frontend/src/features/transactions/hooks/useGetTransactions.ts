@@ -11,15 +11,17 @@ type Transaction = {
   notes: string | null;
   account: string;
   category: string | null;
+  account_name: string;
+  category_name: string | null;
 };
 
 export const useGetTransactions = () => {
   const route = useRoute();
   const { authFetch } = useAuthFetch();
 
-  const from = computed(() => route.query.from as string | undefined);
-  const to = computed(() => route.query.to as string | undefined);
-  const account = computed(() => route.query.account as string | undefined);
+  const from = computed(() => route.query.from as string | "");
+  const to = computed(() => route.query.to as string | "");
+  const account = computed(() => route.query.account as string | "");
 
   return useQuery<Transaction[]>({
     queryKey: ['transactions', { from, to, account }],

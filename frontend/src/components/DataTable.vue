@@ -16,6 +16,9 @@
         <template v-slot:[`item.actions`]="{ item }">
             <component :is="actionsComponent" :id="item.id" />
         </template>
+        <template v-slot:[`item.amount`]="{ item }">
+            {{ item.amount }}
+        </template>        
         <template v-slot:[`footer.prepend`]>
             <div class="px-4 py-2 text-sm text-grey-700 mr-auto">
                 {{ selected.length }} of {{ filteredItems.length }} row(s) selected
@@ -36,7 +39,7 @@ const { isOpen, confirm, title, message, handleConfirm, handleCancel } = useConf
 
 type item = {
     id: string | number
-    name: string
+    [key: string]: string | number | undefined | null
 }
 const props = defineProps<{
     headers: Record<string, string | boolean>[]

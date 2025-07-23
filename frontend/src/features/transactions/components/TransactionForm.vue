@@ -26,14 +26,25 @@ import SelectBox from '../../../components/SelectBox.vue';
 import DatePicker from '../../../components/DatePicker.vue';
 import CurrencyInput from '../../../components/CurrencyInput.vue';
 
-export interface FormValues {
+interface FormValues {
   id?: string;
   amount: string;
   payee: string;
   date: string;
-  account: string;
-  category: string | null;
+  account: {
+    label: string;
+    value: string;
+  };
+  category: {
+    label: string;
+    value: string;
+  } | null;
   notes: string | null;
+}
+
+type Option = {
+  label: string;
+  value: string;
 }
 
 const props = defineProps<{
@@ -42,8 +53,8 @@ const props = defineProps<{
   disabled?: boolean;
   accountOptions: { label: string; value: string }[];
   categoryOptions: { label: string; value: string }[];
-  onCreateAccount: (name: string) => void;
-  onCreateCategory: (name: string) => void;
+  onCreateAccount: (name: string) => Promise<Option | void>;
+  onCreateCategory: (name: string) => Promise<Option | void>;
   onDelete?: () => void;
 }>();
 
@@ -61,8 +72,14 @@ const form = ref<FormValues>({
   amount: props.defaultValues?.amount || '',
   payee: props.defaultValues?.payee || '',
   date: props.defaultValues?.date || '',
-  account: props.defaultValues?.account || '',
-  category: props.defaultValues?.category || '',
+  account: {
+    label: props.defaultValues?.account.label || '',
+    value: props.defaultValues?.account.value || '',
+  },
+  category: {
+    label: props.defaultValues?.category?.label || '',
+    value: props.defaultValues?.category?.value || '',
+  },
   notes: props.defaultValues?.notes || '',
 });
 
@@ -76,7 +93,23 @@ const payeeRules = [
 watch(
   () => props.defaultValues,
   (newValues) => {
-    form.value = { ...form.value, ...newValues };
+    if (newValues) {
+      form.value = {
+        id: props.id,
+        amount: newValues.amount,
+        payee: newValues.payee,
+        date: newValues.date,
+        account: {
+          label: newValues.account.label,
+          value: newValues.account.value,
+        },
+        category: {
+          label: newValues.category?.label || '',
+          value: newValues.category?.value || '',
+        },
+        notes: newValues.notes,
+      };
+    }
   }
 );
 
@@ -101,8 +134,14 @@ const reset = () => {
     amount: '',
     payee: '',
     date: '',
-    account: '',
-    category: '',
+    account: {
+      label: '',
+      value: '',
+    },
+    category: {
+      label: '',
+      value: '',
+    },
     notes: '',
   };
   isFormValid.value = false;
