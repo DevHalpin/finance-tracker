@@ -49,9 +49,9 @@ class TransactionViewSet(viewsets.ModelViewSet, BulkDeleteMixin):
         to_param = self.request.query_params.get('to')
 
         if not account_id:
-            raise ValidationError({"account": "This query parameter is required."})
-
-        queryset = Transaction.objects.filter(account__id=account_id, account__user=user)
+            queryset = Transaction.objects.filter(account__user=user)
+        else:
+            queryset = Transaction.objects.filter(account__id=account_id, account__user=user)
 
         try:
             to_date = parse_date(to_param) if to_param else date.today()
